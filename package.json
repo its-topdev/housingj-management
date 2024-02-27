@@ -29,7 +29,7 @@
     "leaflet-pixi-overlay": "^1.8.2",
     "lodash-es": "^4.17.21",
     "moment": "^2.29.1",
-    "pixi.js": "^6.2.2",
+    "pixi.js": "^7.4.0",
     "popmotion": "^11.0.5",
     "prop-types": "^15.7.2",
     "qs": "^6.11.0",
