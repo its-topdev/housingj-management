@@ -100,6 +100,7 @@ const dashboardConstants = {
   FILTER_CHOICE_STARTED: 'Started',
   FILTER_CHOICE_COMPLETE: 'Complete',
   FILTER_CHOICE_ASSIGNED: 'Assigned',
+  FILTER_ACTION_DELETE: 'Delete',
   FILTER_ACTION_CANCEL: 'Cancel',
   FILTER_ACTION_APPLY_RANGE: 'Apply Range',
   FILTER_ACTION_RESET_FILTERS: 'Reset Filters',

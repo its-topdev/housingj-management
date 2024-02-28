@@ -35,7 +35,7 @@ const DropdownButton = ({
       </Button>
 
       {open &&
-        <div id="dropdown" ref={ref} className="absolute z-10 w-44 text-base list-none bg-white rounded divide-y shadow">
+        <div id="dropdown" ref={ref} className="absolute z-10 w-44 text-base list-none bg-white rounded divide-y shadow-lg">
           <ul className="py-1 divide-y" aria-labelledby="dropdownButton">
             {options.map(({ label, isHidden, ...option }, i) => {
               const onClickOption = (event) => {

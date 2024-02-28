@@ -28,6 +28,7 @@ const ControlledCustomDate = ({
     className,
     'shadow-sm block w-full sm:text-sm rounded-md',
     `${hasError && baseClasses ? baseClasses?.errorClasses : baseClasses?.standardClasses}`,
+    { 'text-gray-400': disabled },
   ), [hasError, className, baseClasses]);
 
   const handleDateChange = useCallback((date) => {

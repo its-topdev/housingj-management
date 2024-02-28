@@ -37,6 +37,7 @@ const ProfileWizard = ({
   userId,
   onUserDeleted,
   recruitingSeasonId,
+  cancelToken,
 
   // State
   rep,
@@ -110,6 +111,7 @@ const ProfileWizard = ({
           <EditProfile
             onUserDeleted={onUserDeleted}
             recruitingSeasonId={recruitingSeasonId}
+            cancelToken={cancelToken}
           />
         );
     }
@@ -173,6 +175,7 @@ ProfileWizard.propTypes = {
   validateOnboardingCompletion: PropTypes.func,
   recruitingSeasonId: PropTypes.string,
   setFeatureFlag: PropTypes.func,
+  cancelToken: PropTypes.object,
 };
 
 const mapStateToProps = (state) => ({

@@ -1,9 +1,9 @@
 import { Loader, Paginator } from '@/components';
 import PropTypes from 'prop-types';
-import { isValidElement } from 'react';
+import { forwardRef, isValidElement } from 'react';
 import { Props, TableHead, TableBody, TableFoot } from '.';
 
-const Table = ({
+const Table = forwardRef(({
   loading,
   loader,
   wrapper,
@@ -12,13 +12,13 @@ const Table = ({
   tfoot,
   paginator,
   ...props
-}) => (
+}, ref) => (
   loading
     ? (
       <Loader {...(new Props(loader).withClassName('py-16'))} />
     )
     : (
-      <div {...(new Props(wrapper).withClassName('border rounded-lg overflow-auto'))}>
+      <div ref={ref} {...(new Props(wrapper).withClassName('border rounded-lg overflow-auto'))}>
         <table {...(new Props(props).withClassName('min-w-full divide-y bg-white'))}>
           {thead && (isValidElement(thead) ? thead : <TableHead {...thead} />)}
           {tbody && (isValidElement(tbody) ? tbody : <TableBody {...tbody} />)}
@@ -27,7 +27,7 @@ const Table = ({
         {paginator && (isValidElement(paginator) ? paginator : <Paginator {...{ className: 'sticky inset-x-0', ...paginator }} />)}
       </div>
     )
-);
+));
 
 Table.defaultProps = {
   loading: false,

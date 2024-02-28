@@ -1,11 +1,21 @@
 import { createReducer } from '@/redux/root';
-import { apartmentNameSpace, requestComplexesAsync, setSelectedApartmentAction, resetSelectedApartmentAction, requestApartmentSummariesAsync, requestPaymentMethodsAsync, requestPaymentTypesAsync } from './actions';
+import {
+  apartmentNameSpace,
+  requestComplexesAsync,
+  setSelectedApartmentAction,
+  resetSelectedApartmentAction,
+  requestApartmentSummariesAsync,
+  requestPaymentMethodsAsync,
+  requestPaymentTypesAsync,
+  requestComplexSummariesAsync,
+} from './actions';
 
 const initialState = {
   complexes: [],
   complexesTotal: 0,
   selected: {},
   apartmentSummaries: [],
+  complexSummaries: [],
   paymentMethods: [],
   paymentTypes: [],
 };
@@ -39,5 +49,9 @@ export const apartmentReducer = createReducer(apartmentNameSpace, initialState, 
 
   [resetSelectedApartmentAction]: ({ state }) => {
     state.selected = {};
+  },
+
+  [requestComplexSummariesAsync.success]: ({ state, action }) => {
+    state.complexSummaries = action.payload ?? [];
   },
 });

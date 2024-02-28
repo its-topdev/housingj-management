@@ -2,7 +2,7 @@ import { Table } from '@/components';
 import { SearchBar } from '@/components/common';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   AddFilterButton,
   FilterDropdownButton,
@@ -11,40 +11,14 @@ import {
 import {
   getLedgerHeadRows,
   parseLedgerRows,
-  parseFilter,
 } from '@/modules/Housing/modules/Ledger/lib';
 import { ledgerConstants } from '@/modules/Housing/lib';
 import { isLedgerListLoadingSelector } from '@/modules/Housing/redux/loading';
-import {
-  requestLedgersAsync,
-  ledgerListSelector,
-  ledgerTotalSelector,
-  archiveLedgerAsync,
-  unArchiveLedgerAsync,
-  setSelectedLedgerAction
-} from '@/modules/Housing/redux/ledger';
-import {
-  requestBranchesSummariesAsync,
-  requestTeamsSummariesAsync,
-  branchesSummariesSelector,
-  teamsSummariesSelector,
-} from '@/modules/Housing/redux/area';
-import {
-  requestDealersAsync,
-  requestPartnershipsAsync,
-  dealersSelector,
-  partnershipsSelector,
-} from '@/modules/Housing/redux/partnership';
-import {
-  requestPaymentTypesAsync,
-  requestComplexesAsync,
-  requestPaymentMethodsAsync,
-  complexesSelector,
-  paymentMethodsSelector,
-  paymentTypesSelector,
-} from '@/modules/Housing/redux/apartment';
+import { payStatus } from '@/modules/Housing/lib/constants';
+import { setSelectedLedgerAction, archiveLedgerAsync, unArchiveLedgerAsync } from '@/modules/Housing/redux/ledger';
+import { useDraggable } from '@/modules/Housing/hooks';
 
-const { LEDGER_TYPE_FILTER_NAME, LEDGER_SEARCH_NAME } = ledgerConstants;
+const { LEDGER_SEARCH_NAME } = ledgerConstants;
 
 const LedgersTable = ({
   // Own Props
@@ -52,172 +26,168 @@ const LedgersTable = ({
   pageSize,
   setPageSize,
   selectedPage,
-  setSelectedPage,
   onPageChange,
-  searchText,
-  setSearchText,
-  searchType,
-  setSearchType,
   ledgers,
   ledgersTotal,
+  filters,
+  setFilters,
+  searchValue,
+  setSearchValue,
   branches,
-  requestBranchesSummaries,
   teams,
-  requestTeamsSummaries,
   dealers,
-  requestDealersSummaries,
   partnerships,
-  requestPartnershipsSummaries,
   typeOfPayments,
-  requestTypeOfPaymentsSummaries,
   complexes,
-  requestComplexSummaries,
   paymentMethods,
-  requestPaymentMethodsSummaries,
   isLoading,
-  getLedgers,
   archiveLedger,
   unArchiveLedger,
   archived,
   setIsModalOpen,
   setSelectedLedger,
+  refreshLedgers,
 }) => {
+  const [filterValueOptions, setFilterValueOptions] = useState([]);
+  const { tableRef } = useDraggable(isLoading);
+
   const onClickArchive = (ledgerId) => {
     const action = archived ? unArchiveLedger : archiveLedger;
 
-    action({ ledgerId, successCallback: () => {
-      getLedgers({
-        page: {
-          number: selectedPage,
-          size: pageSize,
-        },
-        archived: archived,
-      });
-    }});
+    action({
+      ledgerId,
+      successCallback: () => refreshLedgers(),
+    });
   };
 
-  const ledgerRows = parseLedgerRows(
-    ledgers ?? [],
-    archived,
-    onClickArchive,
-    );
+  const ledgerRows = parseLedgerRows(ledgers ?? [], archived, onClickArchive);
 
-    const [filterValueOptions, setFilterValueOptions] = useState([]);
-    const [filters, setFilters] = useState([]);
-
-  useEffect(() => {
-    const params = {
-      page: {
-        number: selectedPage,
-        size: pageSize,
-      },
-      archived: archived,
-      ...parseFilter(filters),
-    };
-    getLedgers(params);
-  }, [getLedgers, selectedPage, pageSize, archived, filters]);
-
-  const handleSearchClick = useCallback(
-    ({ searchText, searchType }) => {
-      setSearchText(searchText);
-      setSearchType(searchType);
-      setSelectedPage(initialPage);
-    },
-    [setSearchText, setSearchType, setSelectedPage, initialPage]
-  );
-
-  useEffect(() => {
-    requestBranchesSummaries();
-    requestTeamsSummaries();
-    requestDealersSummaries();
-    requestPartnershipsSummaries();
-    requestTypeOfPaymentsSummaries();
-    requestComplexSummaries();
-    requestPaymentMethodsSummaries();
-  }, []);
+  const handleSearchClick = ({ searchText }) => {
+    setSearchValue(searchText);
+  };
 
   const filterTypeOptions = [
     {
       onClick: () => setFilterValueOptions(branches),
       label: 'Branch',
       value: 'branch_ids',
+      type: 'dropdown',
     },
     {
       onClick: () => {
-        setFilterValueOptions(teams.map((team) => ({ name: team.label, value: team.value })));
+        setFilterValueOptions(
+          teams.map((team) => ({ name: team.label, value: team.value })),
+        );
       },
       label: 'Team',
       value: 'team_ids',
+      type: 'dropdown',
     },
     {
       onClick: () => setFilterValueOptions(dealers),
       label: 'Dealer',
       value: 'dealer_ids',
+      type: 'dropdown',
     },
     {
       onClick: () => setFilterValueOptions(partnerships),
       label: 'Partnership',
       value: 'partnership_ids',
+      type: 'dropdown',
     },
     {
       onClick: () => setFilterValueOptions(typeOfPayments),
       label: 'Type of Payment',
       value: 'payment_type_ids',
+      type: 'dropdown',
     },
     {
-      onClick: () => {
-        setFilterValueOptions(
-          complexes.map((complex) => ({ name: complex.name, value: complex.id }))
-        );
-      },
+      onClick: () => setFilterValueOptions(complexes),
       label: 'Complex',
       value: 'complex_ids',
+      type: 'dropdown',
     },
     {
       onClick: () => setFilterValueOptions(paymentMethods),
       label: 'Payment Method',
       value: 'payment_method_ids',
+      type: 'dropdown',
+    },
+    {
+      onClick: () => setFilterValueOptions(payStatus),
+      label: 'Paid Status',
+      value: 'pay_status_ids',
+      type: 'dropdown',
+    },
+    {
+      onClick: () => {},
+      label: 'Date Due',
+      value: 'date_due',
+      type: 'daterange',
+    },
+    {
+      onClick: () => {},
+      label: 'Date Paid',
+      value: 'date_paid',
+      type: 'daterange',
     },
   ];
 
   return (
-    <>{!isLoading && (
+    <>
+      {!isLoading && (
         <div className="mt-4 border border-solid border-gray-300 rounded-t-lg p-2 border-b-0 bg-white self-stretch flex items-center justify-between">
           <SearchBar
-            searchType={searchType}
-            searchText={searchText}
-            inputName={LEDGER_TYPE_FILTER_NAME}
-            selectName={LEDGER_SEARCH_NAME}
+            searchText={searchValue}
+            inputName={LEDGER_SEARCH_NAME}
             onSearchClick={handleSearchClick}
           />
           <div className="mr-4 flex items-center gap-6">
             {filters.map((filter, index) => {
-              let options;
+              let options, type;
               switch (filter.type.value) {
                 case 'branch_ids':
                   options = branches;
+                  type = 'dropdown';
                   break;
                 case 'team_ids':
-                  options = teams.map((team) => ({ name: team.label, value: team.value}));
+                  options = teams.map((team) => ({ name: team.label, value: team.value }));
+                  type = 'dropdown';
                   break;
                 case 'dealer_ids':
                   options = dealers;
+                  type = 'dropdown';
                   break;
                 case 'partnership_ids':
                   options = partnerships;
+                  type = 'dropdown';
                   break;
                 case 'payment_type_ids':
                   options = typeOfPayments;
+                  type = 'dropdown';
                   break;
                 case 'complex_ids':
-                  options = complexes.map((complex) => ({ name: complex.name, value: complex.id }));
+                  options = complexes;
+                  type = 'dropdown';
                   break;
                 case 'payment_method_ids':
                   options = paymentMethods;
+                  type = 'dropdown';
+                  break;
+                case 'pay_status_ids':
+                  options = payStatus;
+                  type = 'dropdown';
+                  break;
+                case 'date_paid':
+                  type = 'daterange';
+                  break;
+                case 'date_due':
+                  type = 'daterange';
                   break;
                 default:
                   break;
               }
+
               return (
                 <FilterDropdownButton
                   buttonClassName="border border-gray-200 rounded-lg px-4 py-2 gap-1 inline-flex items-center"
@@ -228,6 +198,7 @@ const LedgersTable = ({
                   setFilters={setFilters}
                   key={index}
                   index={index}
+                  type={type}
                 />
               );
             })}
@@ -240,13 +211,21 @@ const LedgersTable = ({
               label={'+ Add Filters'}
             />
             <div>
-              <Button color={'default'} onClick={() => setFilters([])} className='text-gray-600 text-right font-normal sm:text-xs leading-none border-none shadow-none'>Clear Filters</Button>
-            </div>          
+              <Button
+                color={'default'}
+                onClick={() => setFilters([])}
+                className="text-gray-600 text-right font-normal sm:text-xs leading-none border-none shadow-none"
+              >
+                Clear Filters
+              </Button>
+            </div>
           </div>
         </div>
       )}
       <Table
+        ref={tableRef}
         loading={isLoading}
+        className="select-none"
         thead={{ rows: getLedgerHeadRows() }}
         tbody={{
           rows: ledgerRows,
@@ -278,62 +257,37 @@ LedgersTable.propTypes = {
   pageSize: PropTypes.number,
   setPageSize: PropTypes.func,
   selectedPage: PropTypes.number,
-  setSelectedPage: PropTypes.func,
-  searchText: PropTypes.string,
-  setSearchText: PropTypes.func,
-  searchType: PropTypes.string,
-  setSearchType: PropTypes.func,
+  onPageChange: PropTypes.func,
   ledgers: PropTypes.array,
   ledgersTotal: PropTypes.number,
-  getLedgers: PropTypes.func,
+  filters: PropTypes.array,
+  setFilters: PropTypes.func,
+  searchValue: PropTypes.string,
+  branches: PropTypes.array,
+  teams: PropTypes.array,
+  dealers: PropTypes.array,
+  partnerships: PropTypes.array,
+  typeOfPayments: PropTypes.array,
+  complexes: PropTypes.array,
+  paymentMethods: PropTypes.array,
+  isLoading: PropTypes.bool,
   archiveLedger: PropTypes.func,
   unArchiveLedger: PropTypes.func,
-  isLoading: PropTypes.bool,
-  onPageChange: PropTypes.func,
-  branches: PropTypes.array,
-  requestBranchesSummaries: PropTypes.func,
-  teams: PropTypes.array,
-  requestTeamsSummaries: PropTypes.func,
-  dealers: PropTypes.array,
-  requestDealersSummaries: PropTypes.func,
-  partnerships: PropTypes.array,
-  requestPartnershipsSummaries: PropTypes.func,
-  typeOfPayments: PropTypes.array,
-  requestTypeOfPaymentsSummaries: PropTypes.func,
-  complexes: PropTypes.array,
-  requestComplexSummaries: PropTypes.func,
-  paymentMethods: PropTypes.array,
-  requestPaymentMethodsSummaries: PropTypes.func,
   archived: PropTypes.bool,
   setIsModalOpen: PropTypes.func,
   setSelectedLedger: PropTypes.func,
+  refreshLedgers: PropTypes.func,
+  setSearchValue: PropTypes.func,
 };
 
 const mapStateToProps = (state) => ({
-  ledgers: ledgerListSelector(state),
-  branches: branchesSummariesSelector(state),
-  teams: teamsSummariesSelector(state),
-  dealers: dealersSelector(state),
-  partnerships: partnershipsSelector(state),
-  typeOfPayments: paymentTypesSelector(state),
-  complexes: complexesSelector(state),
-  paymentMethods: paymentMethodsSelector(state),
-  ledgersTotal: ledgerTotalSelector(state),
   isLoading: isLedgerListLoadingSelector(state),
 });
 
 const mapDispatchToProps = {
-  getLedgers: requestLedgersAsync.request,
+  setSelectedLedger: setSelectedLedgerAction,
   archiveLedger: archiveLedgerAsync.request,
   unArchiveLedger: unArchiveLedgerAsync.request,
-  requestBranchesSummaries: requestBranchesSummariesAsync.request,
-  requestTeamsSummaries: requestTeamsSummariesAsync.request,
-  requestDealersSummaries: requestDealersAsync.request,
-  requestPartnershipsSummaries: requestPartnershipsAsync.request,
-  requestTypeOfPaymentsSummaries: requestPaymentTypesAsync.request,
-  requestComplexSummaries: requestComplexesAsync.request,
-  requestPaymentMethodsSummaries: requestPaymentMethodsAsync.request,
-  setSelectedLedger: setSelectedLedgerAction,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(LedgersTable);

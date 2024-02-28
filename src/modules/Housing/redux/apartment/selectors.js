@@ -24,6 +24,11 @@ export const complexesTotalSelector = createSelector(
   (state) => state?.complexesTotal,
 );
 
+export const complexSummariesSelector = createSelector(
+  apartmentSelector,
+  (state) => state?.complexSummaries,
+);
+
 export const apartmentSummariesSelector = createSelector(
   apartmentSelector,
   (state) => state?.apartmentSummaries,

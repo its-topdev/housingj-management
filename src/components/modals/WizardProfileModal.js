@@ -8,6 +8,7 @@ import { userSelector } from '@/redux/auth';
 import { resetFilesAction } from '@/redux/files';
 import { XIcon } from '@heroicons/react/outline';
 import { ModalWrapper } from '@/components';
+import axios from 'axios';
 
 const {
   SUPER_ADMIN_GROUP,
@@ -42,8 +43,10 @@ const WizardProfileModal = ({
   resetProfileCompletion,
 }) => {
   const cancelButtonRef = useRef(null);
+  const source = axios.CancelToken.source();
 
   const onCloseModal = useCallback(() => {
+    source.cancel();
     resetSteps();
     resetFiles();
     resetSelected();
@@ -54,6 +57,7 @@ const WizardProfileModal = ({
     resetFiles,
     resetSelected,
     onClose,
+    source,
   ]);
 
   const wizardType = useMemo(() => {
@@ -103,6 +107,7 @@ const WizardProfileModal = ({
         userId={userId}
         onUserDeleted={onUserDeleted}
         recruitingSeasonId={recruitingSeasonId}
+        cancelToken={source.token}
       />
     </ModalWrapper>
   );

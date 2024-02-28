@@ -1,11 +1,9 @@
 import { useState, useRef } from 'react';
-import classNames from 'classnames';
 import Button from '../Button';
 import PropTypes from 'prop-types';
 import { useOnClickOutside } from '@/hooks';
-import FilterValueHeader from './FilterValueHeader';
-import FilterValueFooter from './FilterValueFooter';
-import { Icon } from '@/components/common/Icon';
+import FilterDropdownMenu from './FilterDropdownMenu';
+import { DateRange } from '../DateRange';
 
 const FilterDropdownButton = ({
   filters,
@@ -15,6 +13,7 @@ const FilterDropdownButton = ({
   buttonClassName,
   labelClassName,
   iconClassName,
+  type,
 }) => {
   const [isFilterValueOpen, setIsFilterValueOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState(
@@ -22,19 +21,10 @@ const FilterDropdownButton = ({
   );
   const [filterOptions, setFilterOptions] = useState('');
 
-  const isSelected = (filterValue) => {
-    return !!selectedOptions.find((el) => JSON.stringify(el) === JSON.stringify(filterValue));
-  };
-
-  const onApplyClick = () => {
-    const newFilters = [...filters];
-    if (selectedOptions.length === 0) {
-      newFilters.splice(index, 1);
-    }
-    else newFilters[index].value = selectedOptions;
-    setFilters(newFilters);
-    setIsFilterValueOpen(false);
-  };
+  const ChildMenu = {
+    dropdown: FilterDropdownMenu,
+    daterange: DateRange,
+  }[type];
 
   const handleOnClickDelete = () => {
     const newFilters = [...filters];
@@ -56,7 +46,7 @@ const FilterDropdownButton = ({
   useOnClickOutside(ref, handleClickOutsideDropdownButton);
 
   return (
-    <div className="relative">
+    <div className="relative" ref={ref}>
       <Button
         id="dropdownButton"
         className={buttonClassName}
@@ -64,7 +54,7 @@ const FilterDropdownButton = ({
         data-dropdown-toggle="dropdown"
       >
         <div className={labelClassName}>
-          {filters[index]?.type.label + ': ' + filters[index]?.value[0].label}
+          {`${filters[index]?.type.label}: ${filters[index]?.value[0].label !== '' ? filters[index]?.value[0].label : filters[index]?.value[1].label !== '' ? filters[index]?.value[1].label : 'All'}`}
         </div>
         <svg
           className={iconClassName ? iconClassName : 'ml-2 w-4 h-4'}
@@ -82,61 +72,18 @@ const FilterDropdownButton = ({
         </svg>
       </Button>
       {isFilterValueOpen && (
-        <div
-          id="dropdown"
-          ref={ref}
-          className="absolute right-0 z-10 w-44 text-base list-none bg-white rounded-lg shadow-md border border-gray-200"
-        >
-          <FilterValueHeader
-            setFilterOptions={setFilterOptions}
-            onClickDelete={handleOnClickDelete}
-          />
-          <ul
-            className="divide-y max-h-52 overflow-y-auto"
-            aria-labelledby="dropdownButton"
-          >
-            {filterValueOptions &&
-              filteredOptions.map(({ name, value }, i) => (
-                <li key={i}>
-                  <div className="flex py-2.5 gap-3">
-                    <div
-                      onClick={
-                        selectedOptions.some((option) => JSON.stringify(option) === JSON.stringify({'label':name, 'value':value}))
-                          ? () =>
-                              setSelectedOptions(
-                                selectedOptions.filter((el) => JSON.stringify(el) !== JSON.stringify({'label':name, 'value':value}))
-                              )
-                          : () => setSelectedOptions([...selectedOptions, {'label':name, 'value':value}])
-                      }
-                      className={classNames(
-                        isSelected({'label':name, 'value':value}) ? 'text-white' : 'text-aptiveblue',
-                        'inset-y-0 flex items-center pl-4'
-                      )}
-                    >
-                      {isSelected({'label':name, 'value':value}) ? (
-                        <Icon
-                          icon="checkBoxSelected"
-                          className="w-4 h-4 text-aptiveblue inline"
-                        />
-                      ) : (
-                        <Icon
-                          icon="checkBoxUnselected"
-                          className="w-4 h-4 text-gray-600 inline"
-                        />
-                      )}
-                    </div>
-                    <div className="text-sm text-gray-600 font-['Inter'] font-normal leading-4 text-left">
-                      {name}
-                    </div>
-                  </div>
-                </li>
-              ))}
-          </ul>
-          <FilterValueFooter
-            onCancelClick={() => setIsFilterValueOpen(false)}
-            onApplyClick={onApplyClick}
-          />
-        </div>
+        <ChildMenu
+          setFilterOptions={setFilterOptions}
+          setIsFilterValueOpen={setIsFilterValueOpen}
+          onClickDelete={handleOnClickDelete}
+          onCancelClick={() => setIsFilterValueOpen(false)}
+          options={filteredOptions}
+          setSelectedOptions={setSelectedOptions}
+          selectedOptions={selectedOptions}
+          filters={filters}
+          setFilters={setFilters}
+          index={index}
+        />
       )}
     </div>
   );
@@ -152,6 +99,7 @@ FilterDropdownButton.propTypes = {
   buttonClassName: PropTypes.string,
   labelClassName: PropTypes.string,
   iconClassName: PropTypes.string,
+  type: PropTypes.string,
 };
 
 FilterDropdownButton.defaultProps = {

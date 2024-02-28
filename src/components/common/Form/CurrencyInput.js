@@ -38,6 +38,7 @@ const CurrencyInput = ({ id, name, value, disabled, onChange, onBlur, mask = {},
       name={name}
       type="text"
       value={value}
+      defaultValue={value}
       placeholder="$"
       mask={currencyMask}
       onChange={onChange}

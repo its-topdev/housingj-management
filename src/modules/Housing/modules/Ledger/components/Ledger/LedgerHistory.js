@@ -1,21 +1,50 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from 'react';
 import { Table } from '@/components';
 import { Breadcrumbs } from '@/components/common';
 import { parseLedgerHistoryRows, getLedgerHistoryHeadRows } from '@/modules/Housing/modules/Ledger/lib';
 import { ledgerConstants } from '@/modules/Housing/lib';
 import { addFsExcludeClass, mergeClassName } from '@/lib/utils';
 import { SearchIcon } from '@heroicons/react/outline';
+import { parseLedgerHistory } from '@/modules/Housing/modules/Ledger/lib';
 import PropTypes from 'prop-types';
+import { ledgerHistorySelector, ledgerHistoryTotalSelector, requestLedgerHistoryAsync } from '@/modules/Housing/redux/ledger';
+import { isLedgerHistoryLoadingSelector } from '@/modules/Housing/redux/loading';
+import { connect } from 'react-redux';
 
 const { LEDGER_HISTORY_SEARCH_NAME } = ledgerConstants;
 
-const LedgerHistory = ({ledgerHistory, onClickBack}) => {
+const LedgerHistory = ({
+  ledgerId,
+  onClickBack,
+  getLedgerHistory,
+  ledgerHistory,
+  historiesTotal,
+  isLoading,
+}) => {
+  const initialPage = 1;
+  const initialPageSize = 10;
 
-  const [ searchText, setSearchText ] = useState('');
+  const [selectedPage, setSelectedPage] = useState(initialPage);
+  const [pageSize, setPageSize] = useState(initialPageSize);
+  const ledgerHistoryFormatted = parseLedgerHistory(ledgerHistory);
 
-  const filteredLedgerHistory = ledgerHistory.filter((history) => Object.values(history).toString().toLowerCase().includes(searchText.toLowerCase()));
+  useEffect(() => {
+    if (ledgerId) {
+      getLedgerHistory({
+        ledgerId,
+        page: {
+          number: selectedPage,
+          size: pageSize,
+        },
+      });
+    }
+  }, [ledgerId, selectedPage, pageSize, getLedgerHistory]);
 
-  const ledgerHistoryRows = parseLedgerHistoryRows(filteredLedgerHistory);
+  const onPageChange = useCallback(({ selected }) => {
+    setSelectedPage(selected);
+  }, []);
+
+  const ledgerHistoryRows = parseLedgerHistoryRows(ledgerHistoryFormatted);
   const breadcrumbLinks = [
     {
       linkName: 'Back to Ledger info',
@@ -25,45 +54,33 @@ const LedgerHistory = ({ledgerHistory, onClickBack}) => {
     {
       linkName: 'History',
       to: '#',
-    }
-  ];  
+    },
+  ];
 
   return (
     <div className="sm:h-[474px] w-full overflow-y-auto">
-      <div className='py-4 px-4 w-full justify-between flex'>
-        <div className='items-center flex'>
+      <div className="py-4 px-4 w-full justify-between flex">
+        <div className="items-center flex">
           <Breadcrumbs
             breadcrumbLinks={breadcrumbLinks}
             activeLinkIndex={1}
           />
         </div>
-        <div className="flex">
-        <input
-          id="search"
-          type="text"
-          name={LEDGER_HISTORY_SEARCH_NAME}
-          placeholder={"Search history"}
-          onChange={(e) => setSearchText(e.target.value)}
-          className={addFsExcludeClass(
-            'w-[268px] p-2.5 text-sm text-gray-500 bg-white grow border border-gray-200 border-r-0 rounded-l-md focus:z-10 focus:border-aptivegreen focus:border-r-aptivegreen' +
-            ' focus:outline-none focus:ring-1 focus:ring-aptivegreen',
-          )}
-        />
-        <button
-          type="submit"
-          className={mergeClassName(
-            'w-14 flex justify-center items-center border border-gray-200 border-l-0 rounded-r-md bg-white hover:bg-gray-50 active:bg-gray-200 focus:outline-primary-300 transition-colors duration-200',
-          )}
-        >
-          <SearchIcon className="h-5 w-5 text-primary-300" />
-        </button>
-        </div>
       </div>
       <div className="w-full sm:w-full overflow-hidden sm:overflow-y-auto">
         <Table
+          loading={isLoading}
           thead={{ rows: getLedgerHistoryHeadRows() }}
           tbody={{
             rows: ledgerHistoryRows,
+          }}
+          paginator={{
+            pageSize,
+            setPageSize,
+            onPageChange,
+            selectedPage,
+            initialPage,
+            rowCount: historiesTotal,
           }}
           wrapper={{
             className: 'rounded-none',
@@ -72,11 +89,25 @@ const LedgerHistory = ({ledgerHistory, onClickBack}) => {
       </div>
     </div>
   );
-}
-
-LedgerHistory.propTypes = {
-  ledgerHistory: PropTypes.array,
-  onClickBack: PropTypes.func,
 };
 
-export default LedgerHistory;
+LedgerHistory.propTypes = {
+  getLedgerHistory: PropTypes.func,
+  ledgerHistory: PropTypes.array,
+  historiesTotal: PropTypes.number,
+  onClickBack: PropTypes.func,
+  ledgerId: PropTypes.number,
+  isLoading: PropTypes.bool,
+};
+
+const mapStateToProps = (state) => ({
+  ledgerHistory: ledgerHistorySelector(state),
+  historiesTotal: ledgerHistoryTotalSelector(state),
+  isLoading: isLedgerHistoryLoadingSelector(state),
+});
+
+const mapDispatchToProps = {
+  getLedgerHistory: requestLedgerHistoryAsync.request,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(LedgerHistory);

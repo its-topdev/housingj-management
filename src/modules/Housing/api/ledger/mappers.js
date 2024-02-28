@@ -1,4 +1,4 @@
-import { formatCurrencyStringToNumber } from '@/lib/utils';
+import { formatCurrencyStringToNumber } from '@/lib/utils/utils';
 
 export const getLedgers = (response) => {
   const total = response?.meta?.total ?? 0;
@@ -123,7 +123,38 @@ export const prepareDataForCreateLedger = (data) => {
   };
 };
 
+export const prepareDataForEditLedger = (data) => {
+  const {
+    dealer_id,
+    apartment_id,
+    vendor_number,
+    payee,
+    payment_method_id,
+    payment_type_id,
+    amount_to_pay,
+    amount_paid,
+    date_paid,
+    pay_status_id,
+  } = data;
+
+  return {
+    dealer_id,
+    apartment_id,
+    ...(vendor_number && { vendor_number }),
+    ...(payee && { payee }),
+    ...(pay_status_id && { pay_status_id }),
+    payment: {
+      ...(payment_method_id && { method_id: payment_method_id }),
+      ...(payment_type_id && { type_id: payment_type_id }),
+      amount_to_pay: formatCurrencyStringToNumber(amount_to_pay),
+      amount_paid: formatCurrencyStringToNumber(amount_paid),
+      ...(date_paid && { date_paid }),
+    },
+  };
+};
+
 export const getLedgerHistory = (response) => {
+  const total = response?.meta?.total ?? 0;
   const history = response?.data?.map((record) => {
     const {
       field_name,
@@ -148,5 +179,29 @@ export const getLedgerHistory = (response) => {
     };
   });
   
-  return history;
+  return { items: history, total };
+}
+
+export const getLedgerNotes = (response) => {
+  const notes = response?.data?.map((el) => {
+    const {
+      note_id,
+      note,
+      ledger_record_id,
+      creator_id,
+      creator_name,
+      created_at,
+    } = el?.attributes ?? {};
+
+    return {
+      note_id,
+      note,
+      ledger_record_id,
+      creator_id,
+      creator_name,
+      created_at,
+    };
+  });
+
+  return notes;
 }

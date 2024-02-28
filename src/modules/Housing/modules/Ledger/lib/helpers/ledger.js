@@ -1,17 +1,7 @@
-import { arrayWithoutEmpty } from '@/lib/utils';
+import { arrayWithoutEmpty, formatNumberToCurrencyString, formatDateDisplay } from '@/lib/utils';
 import { housingConstants } from '@/modules/Housing/lib/constants';
 import { PencilAltIcon } from '@heroicons/react/solid';
 import { Icon } from '@/components/common';
-
-const formatStringToCurrency = (number) => {
-  const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  });
-  const formatted = formatter.format(number);
-
-  return formatted;
-}
 
 export const getLedgerHeadRows = () => (
   arrayWithoutEmpty([
@@ -154,7 +144,7 @@ export const parseLedgerRows = (rows, archived, onClickArchive) => (
         className: 'whitespace-nowrap',
       },
       {
-        value: formatStringToCurrency(amount_to_pay),
+        value: formatNumberToCurrencyString(amount_to_pay, 2),
         align: 'right',
         className: 'whitespace-nowrap',
       },
@@ -169,7 +159,7 @@ export const parseLedgerRows = (rows, archived, onClickArchive) => (
         className: 'whitespace-nowrap',
       },
       {
-        value: formatStringToCurrency(amount_paid),
+        value: formatNumberToCurrencyString(amount_paid, 2),
         align: 'right',
         className: 'whitespace-nowrap',
       },
@@ -179,7 +169,7 @@ export const parseLedgerRows = (rows, archived, onClickArchive) => (
         className: 'whitespace-nowrap',
       },
       {
-        value: formatStringToCurrency(expected_rent),
+        value: formatNumberToCurrencyString(expected_rent, 2),
         align: 'right',
         className: 'whitespace-nowrap',
       },
@@ -219,22 +209,22 @@ export const parseLedgerRows = (rows, archived, onClickArchive) => (
         className: 'whitespace-nowrap',
       },
       {
-        value: formatStringToCurrency(furniture_damaged),
+        value: formatNumberToCurrencyString(furniture_damaged, 2),
         align: 'right',
         className: 'whitespace-nowrap',
       },
       {
-        value: formatStringToCurrency(rep_utilities),
+        value: formatNumberToCurrencyString(rep_utilities, 2),
         align: 'right',
         className: 'whitespace-nowrap',
       },
       {
-        value: formatStringToCurrency(apartment_charges),
+        value: formatNumberToCurrencyString(apartment_charges, 2),
         align: 'right',
         className: 'whitespace-nowrap',
       },
       {
-        value: formatStringToCurrency(apartment_deduction),
+        value: formatNumberToCurrencyString(apartment_deduction, 2),
         align: 'right',
         className:  'whitespace-nowrap text-red-500',
       },
@@ -267,7 +257,7 @@ export const getLedgerHistoryHeadRows = () => (
   arrayWithoutEmpty([
     {
       value: 'ITEM CHANGED',
-      align: 'center',
+      align: 'left',
     },
     {
       value: 'CHANGED FROM',
@@ -279,11 +269,11 @@ export const getLedgerHistoryHeadRows = () => (
     },
     {
       value: 'CHANGED BY',
-      align: 'center',
+      align: 'left',
     },
     {
       value: 'CHANGING DATE',
-      align: 'center',
+      align: 'right',
     },
   ])
 );
@@ -291,38 +281,38 @@ export const getLedgerHistoryHeadRows = () => (
 export const parseLedgerHistoryRows = (rows) => (
   rows.length ? rows.map((row) => {
     const {
-      changed_from,
-      changed_to,
-      field_name,
+      changed_form_formatted,
+      changed_to_formatted,
+      item_changed,
       changed_by_name,
-      changed_at,
+      changing_date,
     } = row ?? {};
 
     return [
       {
-        value: field_name,
+        value: item_changed,
         align: 'left',
-        className: 'whitespace-nowrap',
+        className: 'whitespace-nowrap capitalize',
       },
       {
-        value: changed_from,
+        value: changed_form_formatted,
         align: 'left',
-        className: 'whitespace-nowrap',
+        className: 'whitespace-nowrap capitalize',
       },
       {
-        value: changed_to,
+        value: changed_to_formatted,
         align: 'left',
-        className: 'whitespace-nowrap',
+        className: 'whitespace-nowrap capitalize',
       },
       {
         value: changed_by_name,
         align: 'left',
-        className: 'whitespace-nowrap',
+        className: 'whitespace-nowrap capitalize',
       },
       {
-        value: changed_at,
+        value: changing_date,
         align: 'right',
-        className: 'whitespace-nowrap',
+        className: 'whitespace-nowrap capitalize',
       },
     ];
   }) : [
@@ -335,17 +325,83 @@ export const parseLedgerHistoryRows = (rows) => (
   ]
 );
 
+const historyFields = {
+  dealer_id: 'Dealer',
+  apartment_id: 'Apartment (Unit ID)',
+  pay_status_id: 'Pay Status',
+  payment_method_id: 'Payment Method',
+  payment_type_id: 'Payment Type',
+  vendor_number: 'Vendor Number',
+  payee: 'Payee',
+  amount_to_pay: 'Amount to Pay',
+  amount_paid: 'Amount Paid',
+  date_paid: 'Date Paid',
+  is_deleted: 'Is Deleted',
+
+};
+
+export const parseLedgerHistory = (history) => {
+  const parsedHistory = history.map((item) => {
+    const {
+      changed_at,
+      changed_by_name,
+      changed_from,
+      changed_from_addition,
+      changed_to,
+      changed_to_addition,
+      field_name,
+    } = item;
+
+    const item_changed = historyFields[field_name] || field_name;
+    const changing_date = formatDateDisplay(new Date(changed_at).toLocaleString());
+    let changed_form_formatted;
+    let changed_to_formatted;
+
+    if(field_name === 'amount_to_pay' || field_name === 'amount_paid') {
+      changed_form_formatted = formatNumberToCurrencyString(changed_from, 2);
+      changed_to_formatted = formatNumberToCurrencyString(changed_to, 2);
+    } else if(field_name === 'date_paid') {
+      changed_form_formatted = changed_from ? formatDateDisplay(new Date(changed_from).toLocaleString()) : '';
+      changed_to_formatted = changed_to ? formatDateDisplay(new Date(changed_to).toLocaleString()) : '';
+    } else if(field_name === 'is_deleted') {
+      changed_form_formatted = changed_from ? 'Yes' : 'No';
+      changed_to_formatted = changed_to ? 'Yes' : 'No';
+    } else if(field_name === 'dealer_id' || field_name === 'apartment_id' || field_name === 'pay_status_id' || field_name === 'payment_method_id' || field_name === 'payment_type_id') {
+      changed_form_formatted = changed_from_addition ? changed_from_addition : changed_from ? changed_from : 'N/A';
+      changed_to_formatted = changed_to_addition ? changed_to_addition : changed_to ? changed_to : 'N/A';
+    } else if(field_name === 'vendor_number' || field_name === 'payee') {
+      changed_form_formatted = changed_from ? changed_from : 'N/A';
+      changed_to_formatted = changed_to ? changed_to : 'N/A';
+    } else {
+      changed_form_formatted = changed_from ? changed_from : '';
+      changed_to_formatted = changed_to ? changed_to : '';
+    }
+
+    return {
+      item_changed,
+      changed_form_formatted,
+      changed_to_formatted,
+      changed_by_name,
+      changing_date,
+    };
+  });
+
+  return parsedHistory;
+};
+
 export const parseFilter = (filters) => {
   const transformedFilter = filters.map((filter) => {
     const type = filter.type.value;
     const value = filter.value.map((el) => el.value);
-    return {'type': type, 'value': value };
+
+    return { 'type': type, 'value': value };
   });
 
   const mergedFilter = transformedFilter.reduce((acc, filter) => {
     const index = acc.findIndex((el) => el.type === filter.type);
     if (index > -1) {
-      acc[index].value = [...new Set([...acc[index].value, filter.value])];
+      acc[index].value = filter.value;
+
       return acc;
     } else {
       return [...acc, filter];
@@ -354,7 +410,17 @@ export const parseFilter = (filters) => {
 
   const parsedFilter = {};
   mergedFilter.forEach((filter) => {
-    parsedFilter[filter.type] = filter.value;
-  })
+    if(filter.type === 'date_paid' || filter.type === 'date_due') {
+      if(filter.value[0]) {
+        parsedFilter[`${filter.type}_from`] = filter.value[0];
+      }
+      if(filter.value[1]) {
+        parsedFilter[`${filter.type}_to`] = filter.value[1];
+      }
+    } else {
+      parsedFilter[filter.type] = filter.value;
+    };
+  });
+
   return parsedFilter;
-}
+};

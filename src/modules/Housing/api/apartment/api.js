@@ -15,3 +15,5 @@ export const getApartmentSummaries = Api.get({ path: '/api/v1/housing/apartment/
 export const getPaymentMethods = Api.get({ path: '/api/v1/housing/apartment/payment-methods', api });
 
 export const getPaymentTypes = Api.get({ path: '/api/v1/housing/apartment/payment-types', api });
+
+export const getComplexSummaries = Api.get({ path: '/api/v1/housing/apartment/complexes-summaries', api });

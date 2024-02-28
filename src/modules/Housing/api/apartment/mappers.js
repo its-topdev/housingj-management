@@ -41,6 +41,22 @@ export const getComplexes = (response) => {
   return { items: complexes, total };
 };
 
+export const getComplexSummaries = (response) => {
+  const complexes = response?.data?.attributes ? [response.data] : response?.data ?? [];
+
+  return complexes.map((complex) => {
+    const {
+      id: value,
+      name,
+    } = complex?.attributes ?? {};
+
+    return {
+      name,
+      value,
+    };
+  });
+}
+
 export const getApartmentSummaries = (response) => {
   const apartments = response?.data?.attributes ? [response.data] : response?.data ?? [];
 

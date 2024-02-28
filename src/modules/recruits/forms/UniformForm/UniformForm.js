@@ -39,6 +39,7 @@ const UniformForm = ({
   wizardType,
   isPersonalWizard,
   userId,
+  cancelToken,
 
   // State / Dispatch
   isUpdated,
@@ -107,6 +108,7 @@ const UniformForm = ({
         ...(userId && { userId }),
         ...(recruitingSeasonId && { recruitingSeasonId: recruitingSeasonId }),
       },
+      ...(cancelToken && { cancelToken }),
       successCallback: onSuccess ?? (() => {}),
     });
   });
@@ -227,6 +229,7 @@ UniformForm.propTypes = {
     applyTransition: PropTypes.func.isRequired,
     declineTransition: PropTypes.func.isRequired,
   }),
+  cancelToken: PropTypes.object,
 };
 
 const mapStateToProps = (state) => ({

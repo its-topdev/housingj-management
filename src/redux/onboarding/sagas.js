@@ -33,13 +33,16 @@ const {
 
 function* updateRepSaga({ payload }) {
   try {
-    const { data, successCallback } = payload;
+    const { data, successCallback, cancelToken } = payload;
 
     yield put(setOnboardingDataUpdated(false));
     const result = yield call(
       Api.updateRep,
       { ...data },
-      { withCredentials: false },
+      {
+        withCredentials: false,
+        ...(cancelToken && { cancelToken }),
+      },
     );
 
     const modified = normalizeIncomingData(result.data?.attributes);

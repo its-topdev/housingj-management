@@ -66,6 +66,7 @@ const PersonalInfoForm = ({
   wizardType,
   isPersonalWizard,
   userId,
+  cancelToken,
 
   // State / Dispatch
   isUpdated,
@@ -173,6 +174,7 @@ const PersonalInfoForm = ({
         ...(userId && { userId }),
         ...(recruitingSeasonId && { recruitingSeasonId: recruitingSeasonId }),
       },
+      ...(cancelToken && { cancelToken }),
       successCallback: onSuccess ?? (() => {}),
     });
   });
@@ -411,6 +413,7 @@ PersonalInfoForm.propTypes = {
     applyTransition: PropTypes.func.isRequired,
     declineTransition: PropTypes.func.isRequired,
   }),
+  cancelToken: PropTypes.object,
 };
 
 const mapStateToProps = (state) => ({

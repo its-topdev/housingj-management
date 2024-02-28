@@ -21,3 +21,13 @@ export const ledgerHistorySelector = createSelector(
   ledgerObjectSelector,
   (state) => state?.history,
 );
+
+export const ledgerHistoryTotalSelector = createSelector(
+  ledgerObjectSelector,
+  (state) => state?.historiesTotal,
+);
+
+export const ledgerNotesSelector = createSelector(
+  ledgerObjectSelector,
+  (state) => state?.ledger?.notes,
+);

@@ -56,6 +56,7 @@ const LicensingForm = ({
   wizardType,
   isPersonalWizard,
   userId,
+  cancelToken,
 
   // State / Dispatch
   isUpdated,
@@ -152,6 +153,7 @@ const LicensingForm = ({
         ...(userId && { userId }),
         ...(recruitingSeasonId && { recruitingSeasonId: recruitingSeasonId }),
       },
+      ...(cancelToken && { cancelToken }),
       successCallback: onSuccess ?? (() => {}),
     });
   });
@@ -340,6 +342,7 @@ LicensingForm.propTypes = {
     declineTransition: PropTypes.func.isRequired,
   }),
   isRepEditable: PropTypes.bool,
+  cancelToken: PropTypes.object,
 };
 
 const mapStateToProps = (state) => ({

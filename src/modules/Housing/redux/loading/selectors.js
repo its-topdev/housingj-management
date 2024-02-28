@@ -72,3 +72,8 @@ export const apartmentFormLoadingSelector = createSelector(
     isDealersLoading || isComplexesLoading || isApartmentLoading
   ),
 );
+
+export const isLedgerHistoryLoadingSelector = createSelector(
+  loadingSelector,
+  (state) => state?.ledgerHistory?.isLoading,
+);

@@ -66,6 +66,7 @@ const EditProfile = ({
   isReadyToSubmit,
   workdayComplete,
   authUser,
+  cancelToken,
 
   // Dispatch
   setCurrentStep,
@@ -102,9 +103,9 @@ const EditProfile = ({
 
   useEffect(() => {
     if (userId) {
-      requestRepAsContact({ userId, recruitingSeasonId });
+      requestRepAsContact({ userId, recruitingSeasonId, ...(cancelToken && { cancelToken }) });
     } else {
-      requestUser();
+      requestUser({ ...(cancelToken && { cancelToken }) });
     }
   }, [userId, requestUser, requestRepAsContact]);
 
@@ -135,6 +136,7 @@ const EditProfile = ({
             wizardType={wizardType}
             isPersonalWizard={isPersonalWizard}
             userId={userId}
+            cancelToken={cancelToken}
           />
         );
       case HOUSING_VEHICLE_STEP_ID:
@@ -143,6 +145,7 @@ const EditProfile = ({
             wizardType={wizardType}
             isPersonalWizard={isPersonalWizard}
             userId={userId}
+            cancelToken={cancelToken}
           />
         );
       case UNIFORM_STEP_ID:
@@ -151,6 +154,7 @@ const EditProfile = ({
             wizardType={wizardType}
             isPersonalWizard={isPersonalWizard}
             userId={userId}
+            cancelToken={cancelToken}
           />
         );
       case LICENSING_STEP_ID:
@@ -159,6 +163,7 @@ const EditProfile = ({
             wizardType={wizardType}
             isPersonalWizard={isPersonalWizard}
             userId={userId}
+            cancelToken={cancelToken}
           />
         );
       case HR_STEP_ID:
@@ -167,6 +172,7 @@ const EditProfile = ({
             wizardType={wizardType}
             isPersonalWizard={isPersonalWizard}
             userId={userId}
+            cancelToken={cancelToken}
           />
         );
       case SUBMIT_PROFILE_STEP_ID:
@@ -268,6 +274,7 @@ EditProfile.propTypes = {
   requestApartmentStatuses: PropTypes.func,
   recruitingSeasonId: PropTypes.string,
   authUser: PropTypes.object,
+  cancelToken: PropTypes.object,
 };
 
 const mapStateToProps = (state) => ({

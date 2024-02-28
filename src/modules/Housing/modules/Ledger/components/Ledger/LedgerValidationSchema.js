@@ -35,7 +35,11 @@ export const ledgerValidationSchema = yup.object().shape({
     .required(REQUIRED),
   apartment_ids: yup
     .array()
-    .required(REQUIRED)
+    .when([], {
+      is: (apartment_ids) => apartment_ids !== undefined,
+      then: yup.array().required(REQUIRED),
+      otherwise: yup.array().notRequired(),
+    })
     .min(1, MIN_1_ARRAY),
   vendor_number: yup.string()
     .checkWhiteSpacesOnly(REQUIRED)

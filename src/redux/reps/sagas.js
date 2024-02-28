@@ -5,7 +5,8 @@ import Api from '../../api';
 import {
   hrCompletionSelector,
   selectUserIdSelected,
-  setOnboardingDataUpdated, setOnboardingFormCompleted,
+  setOnboardingDataUpdated,
+  setOnboardingFormCompleted,
   setSelectedAction,
   setSelectedPropAction,
   hrDataSelector,
@@ -36,11 +37,16 @@ import { addToastsAction } from '@/redux/toasts';
 import { requestPersonalContractsAsync } from '@/redux/contracts';
 import { onboardingConstants } from '@/lib/constants';
 
-function* requestUserAsContactSaga() {
+function* requestUserAsContactSaga({ payload }) {
+  const { cancelToken } = payload;
+  yield put(setOnboardingDataUpdated(false));
   const response = yield call(
     Api.getUserAsContact,
     {},
-    { withCredentials: false },
+    {
+      withCredentials: false,
+      ...(cancelToken && { cancelToken }),
+    },
   );
 
   const modified = normalizeIncomingData(response?.data?.attributes);
@@ -52,13 +58,17 @@ function* requestUserAsContactSaga() {
 }
 
 function* requestRepAsContactSaga({ payload }) {
-  const { userId, contactId, recruitingSeasonId } = payload;
+  const { userId, contactId, recruitingSeasonId, cancelToken } = payload;
   const url = contactId ? Api.getRepByContactId(contactId) : Api.getRepByUserId(userId);
 
+  yield put(setOnboardingDataUpdated(false));
   const response = yield call(
     url,
     { recruitingSeasonId },
-    { withCredentials: false },
+    {
+      withCredentials: false,
+      ...(cancelToken && { cancelToken }),
+    },
   );
 
   const { onboarded } = response.data.attributes;
@@ -154,7 +164,6 @@ function* addRepSaga({ payload }) {
 }
 
 function* adminUpdateRepSaga({ payload }) {
-  yield put(setOnboardingDataUpdated(false));
   const { id } = payload;
   const { data } = yield call(
     Api.adminUpdateRep(id),
@@ -188,12 +197,15 @@ function* requestRecruitingSeasonSaga() {
 
 function* updateRepByIdSaga({ payload }) {
   try {
-    const { data, successCallback } = payload;
+    const { data, successCallback, cancelToken } = payload;
     yield put(setOnboardingDataUpdated(false));
     const result = yield call(
       Api.updateRepById,
       { ...data },
-      { withCredentials: false },
+      {
+        withCredentials: false,
+        ...(cancelToken && { cancelToken }),
+      },
     );
 
     const modified = normalizeIncomingData(result?.data?.attributes);

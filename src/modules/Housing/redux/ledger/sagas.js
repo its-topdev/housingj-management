@@ -10,6 +10,8 @@ import {
   importLedgersTemplateAsync,
   exportLedgersAsync,
   requestLedgerHistoryAsync,
+  editLedgerAsync,
+  requestLedgerNotesAsync,
 } from './actions';
 import { createRequestSaga } from '@/redux/helpers';
 import { prepareFileForRequest } from '@/lib/utils/files';
@@ -79,7 +81,7 @@ function* unArchiveLedger({ payload }){
 
 function* getLedgerHisotry({ payload }){
   const response = yield call(
-    Api.getLedgerHistory(payload.ledgerRecordId),
+    Api.getLedgerHistory(payload.ledgerId),
     { ...payload },
     { withCredentials: false },
   );
@@ -169,6 +171,27 @@ function* createLedgerSaga({ payload }) {
   }
 }
 
+function* editLedgerSaga({ payload }) {
+  try {
+    const { ledgerRecordId, data, successCallback } = payload;
+    const response = yield call(
+      Api.updateLedger(ledgerRecordId),
+      Mapper.prepareDataForEditLedger(data),
+      { withCredentials: false },
+    );
+
+    yield put(editLedgerAsync.success(response));
+
+    if (successCallback) {
+      yield call(successCallback);
+    }
+  } catch (error) {
+    yield put(addToastsAction(mapErrorToastsData(error)));
+
+    throw error;
+  }
+}
+
 function* createNoteSaga({ payload }) {
   try {
     const { data, successCallback } = payload;
@@ -188,6 +211,28 @@ function* createNoteSaga({ payload }) {
 
     throw error;
   }
+}
+
+function* getLedgerNotesSaga({ payload }) {
+  try {
+    const {ledgerId, successCallback} = payload;
+    const response = yield call(
+      Api.getLedgerNotes(ledgerId),
+      { ...payload },
+      { withCredentials: false },
+    );
+
+    yield put(requestLedgerNotesAsync.success(Mapper.getLedgerNotes(response)));
+
+    if (successCallback) {
+      yield call(successCallback);
+    }
+  } catch (error) {
+    yield put(addToastsAction(mapErrorToastsData(error)));
+
+    throw error;
+}
+  
 }
 
 export function* ledgerActionWatcher() {
@@ -255,6 +300,15 @@ export function* ledgerActionWatcher() {
   );
 
   yield takeLatest(
+    editLedgerAsync.request.type,
+    createRequestSaga(editLedgerSaga, {
+      keyNew: 'editLedger',
+      errKey: 'editLedger',
+      write: true,
+    }),
+  );
+
+  yield takeLatest(
     createNoteAsync.request.type,
     createRequestSaga(createNoteSaga, {
       keyNew: 'createNote',
@@ -268,6 +322,15 @@ export function* ledgerActionWatcher() {
     createRequestSaga(getLedgerHisotry, {
       keyNew: 'ledgerHistory',
       errKey: 'ledgerHistory',
+      write: true,
+    }),
+  );
+
+  yield takeLatest(
+    requestLedgerNotesAsync.request.type,
+    createRequestSaga(getLedgerNotesSaga, {
+      keyNew: 'ledgerNotes',
+      errKey: 'ledgerNotes',
       write: true,
     }),
   );

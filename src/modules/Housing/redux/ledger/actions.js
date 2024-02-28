@@ -16,6 +16,8 @@ export const exportLedgersAsync = createAsyncAction(`${nameSpace}/RESET_SELECTED
 
 export const createLedgerAsync = createAsyncAction(`${nameSpace}/CREATE_LEDGER`);
 
+export const editLedgerAsync = createAsyncAction(`${nameSpace}/UPDATE_LEDGER`);
+
 export const createNoteAsync = createAsyncAction(`${nameSpace}/CREAT_NOTE`);
 
 export const resetSelectedLedgerAction = createAction(`${nameSpace}/RESET_SELECTED_LEDGER`);
@@ -23,3 +25,5 @@ export const resetSelectedLedgerAction = createAction(`${nameSpace}/RESET_SELECT
 export const setSelectedLedgerAction = createAction(`${nameSpace}/SET_SELECTED_LEDGER`);
 
 export const requestLedgerHistoryAsync = createAsyncAction(`${nameSpace}/GET_LEDGER_HISTORY`);
+
+export const requestLedgerNotesAsync = createAsyncAction(`${nameSpace}/GET_LEDGER_NOTES`);

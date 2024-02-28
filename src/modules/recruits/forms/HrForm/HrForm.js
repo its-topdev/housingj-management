@@ -57,6 +57,7 @@ const HrForm = ({
   wizardType,
   isPersonalWizard,
   userId,
+  cancelToken,
 
   // State / Dispatch
   isUpdated,
@@ -159,6 +160,7 @@ const HrForm = ({
         ...(userId && { userId }),
         ...(recruitingSeasonId && { recruitingSeasonId: recruitingSeasonId }),
       },
+      ...(cancelToken && { cancelToken }),
       successCallback: onSuccess ?? (() => {}),
     });
   });
@@ -340,6 +342,7 @@ HrForm.propTypes = {
     declineTransition: PropTypes.func.isRequired,
   }),
   isRepEditable: PropTypes.bool,
+  cancelToken: PropTypes.object,
 };
 
 const mapStateToProps = (state) => ({

@@ -1,6 +1,7 @@
 import { createReducer } from '@/redux/root';
 import {
   createLedgerAsync,
+  editLedgerAsync,
   createNoteAsync,
   requestLedgersAsync,
   resetSelectedLedgerAction,
@@ -9,6 +10,7 @@ import {
   importLedgersTemplateAsync,
   setSelectedLedgerAction,
   requestLedgerHistoryAsync,
+  requestLedgerNotesAsync,
 } from './actions';
 import { s2ab } from '@/lib/utils';
 import { saveAs } from 'file-saver';
@@ -35,11 +37,12 @@ const initialState = {
     notes: [],
   },
   history: [],
+  historiesTotal: 0,
 };
 const downloadLedgersFile = (payload) => {
   const fileData = payload?.data?.attributes;
-  const blob = new Blob([s2ab(atob(fileData?.file))], {type: ''})
-  saveAs(blob, fileData?.file_name)
+  const blob = new Blob([s2ab(atob(fileData?.file))], { type: '' });
+  saveAs(blob, fileData?.file_name);
 };
 
 export const ledgerReducer = createReducer(nameSpace, initialState, {
@@ -57,6 +60,9 @@ export const ledgerReducer = createReducer(nameSpace, initialState, {
   [createLedgerAsync.success]: ({ state, action }) => {
     state.ledger = initialState.ledger;
   },
+  [editLedgerAsync.success]: ({ state, action }) => {
+    state.ledger = initialState.ledger;
+  },
   [createNoteAsync.success]: ({ state }) => {
     state.ledger = initialState.ledger;
   },
@@ -67,6 +73,11 @@ export const ledgerReducer = createReducer(nameSpace, initialState, {
     state.ledger = action.payload;
   },
   [requestLedgerHistoryAsync.success]: ({ state, action }) => {
-    state.history = action.payload;
-  }
+    const { items, total } = action.payload;
+    state.history = items;
+    state.historiesTotal = total;
+  },
+  [requestLedgerNotesAsync.success]: ({ state, action }) => {
+    state.ledger.notes = action.payload;
+  },
 });

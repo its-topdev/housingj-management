@@ -21,3 +21,5 @@ export const requestApartmentSummariesAsync = createAsyncAction(`${nameSpace}/GE
 export const requestPaymentMethodsAsync = createAsyncAction(`${nameSpace}/GET_PAYMENT_METHODS`);
 
 export const requestPaymentTypesAsync = createAsyncAction(`${nameSpace}/GET_PAYMENT_TYPES`);
+
+export const requestComplexSummariesAsync = createAsyncAction(`${nameSpace}/GET_COMPLEX_SUMMARIES`);

@@ -16,6 +16,10 @@ export const exportLedgers = Api.get({ path: '/api/v1/housing/apartment/ledger-r
 
 export const createLedger = Api.post({ path: '/api/v1/housing/apartment/ledger-records', api });
 
+export const updateLedger = (ledgerId) => Api.patch({ path: `/api/v1/housing/apartment/ledger-records/${ledgerId}`, api });
+
 export const createNote = (ledgerRecordId) => Api.post({ path: `/api/v1/housing/apartment/ledger-records/${ledgerRecordId}/notes`, api});
 
 export const getLedgerHistory = (ledgerRecordId) => Api.get({ path: `/api/v1/housing/apartment/ledger-records/${ledgerRecordId}/history`, api});
+
+export const getLedgerNotes = (ledgerRecordId) => Api.get({ path: `/api/v1/housing/apartment/ledger-records/${ledgerRecordId}/notes`, api});

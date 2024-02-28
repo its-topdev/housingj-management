@@ -1,7 +1,7 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
 import { createRequestSaga } from '@/redux/helpers';
 import Api, { Mapper } from '../../api';
-import { createApartmentComplexAsync, requestApartmentSummariesAsync, requestPaymentMethodsAsync, requestPaymentTypesAsync } from './actions';
+import { createApartmentComplexAsync, requestApartmentSummariesAsync, requestPaymentMethodsAsync, requestPaymentTypesAsync, requestComplexSummariesAsync } from './actions';
 import { addToastsAction } from '@/redux/toasts';
 import { mapErrorToastsData } from '@/lib/api';
 import { createApartmentAsync, updateApartmentAsync, requestComplexesAsync } from '@/modules/Housing/redux/apartment';
@@ -23,7 +23,7 @@ function* createApartmentComplexSaga({ payload }) {
 
     throw error;
   }
-}
+};
 
 function* createApartmentSags({ payload }) {
   try {
@@ -42,7 +42,7 @@ function* createApartmentSags({ payload }) {
 
     throw error;
   }
-}
+};
 
 function* updateApartmentSaga({ payload }) {
   try {
@@ -61,7 +61,7 @@ function* updateApartmentSaga({ payload }) {
 
     throw error;
   }
-}
+};
 
 function* requestComplexes({ payload }) {
   const response = yield call(
@@ -71,7 +71,17 @@ function* requestComplexes({ payload }) {
   );
 
   yield put(requestComplexesAsync.success(Mapper.getComplexes(response)));
-}
+};
+
+function* requestComplexSummaries({ payload }) {
+  const response = yield call(
+    Api.getComplexSummaries,
+    { ...payload },
+    { withCredentials: false },
+  );
+
+  yield put(requestComplexSummariesAsync.success(Mapper.getComplexSummaries(response)));
+};
 
 function* requestApartmentSummariesSaga({ payload }) {
   const response = yield call(
@@ -81,7 +91,7 @@ function* requestApartmentSummariesSaga({ payload }) {
   );
 
   yield put(requestApartmentSummariesAsync.success(Mapper.getApartmentSummaries(response)));
-}
+};
 
 function* requestPaymentMethodsSaga({ payload }) {
   const response = yield call(
@@ -91,7 +101,7 @@ function* requestPaymentMethodsSaga({ payload }) {
   );
 
   yield put(requestPaymentMethodsAsync.success(Mapper.getPaymentMethods(response)));
-}
+};
 
 function* requestPaymentTypesSaga({ payload }) {
   const response = yield call(
@@ -101,7 +111,7 @@ function* requestPaymentTypesSaga({ payload }) {
   );
 
   yield put(requestPaymentTypesAsync.success(Mapper.getPaymentTypes(response)));
-}
+};
 
 export function* apartmentWatcher() {
   yield takeLatest(
@@ -133,6 +143,14 @@ export function* apartmentWatcher() {
     createRequestSaga(requestComplexes, {
       keyNew: 'complexes',
       errKey: 'complexes',
+      write: true,
+    }),
+  );
+  yield takeLatest(
+    requestComplexSummariesAsync.request.type,
+    createRequestSaga(requestComplexSummaries, {
+      keyNew: 'complexSummaries',
+      errKey: 'complexSummaries',
       write: true,
     }),
   );
